@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Configuracoes · DocAuth AI{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Sistema</p>
+        <h1>Configuracoes</h1>
+    </div>
+</div>
+
+<section class="content-band">
+    <div class="settings-grid">
+        <div>
+            <h2>OCR</h2>
+            <p class="text-muted">PDFs com texto embutido sao lidos diretamente. Imagens usam Tesseract quando instalado.</p>
+        </div>
+        <div>
+            <h2>Seguranca</h2>
+            <p class="text-muted">Uploads limitados a PDF, PNG, JPG e JPEG, com tamanho maximo de 10 MB.</p>
+        </div>
+        <div>
+            <h2>Base de dados</h2>
+            <p class="text-muted">SQLite local por padrao, com suporte a PostgreSQL ou MySQL via DATABASE_URL.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

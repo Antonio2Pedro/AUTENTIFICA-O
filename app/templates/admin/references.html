@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Modelos originais · DocAuth AI{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Administracao</p>
+        <h1>Modelos originais</h1>
+    </div>
+</div>
+
+<section class="content-band narrow-band">
+    <div class="section-heading">
+        <h2>Registar instituicao</h2>
+    </div>
+    <form method="post" class="row g-3 align-items-end">
+        <input type="hidden" name="form_action" value="institution">
+        <div class="col-md-8">
+            <label class="form-label" for="institution-name">Nome da instituicao</label>
+            <input class="form-control" id="institution-name" name="name" required>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" for="institution-code">Codigo</label>
+            <input class="form-control" id="institution-code" name="code" maxlength="30" required>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-primary w-100" type="submit"><i class="bi bi-building-add"></i> Registar</button>
+        </div>
+    </form>
+</section>
+
+<section class="content-band narrow-band">
+    <div class="section-heading">
+        <h2>Adicionar modelo original</h2>
+        <span>Documento aprovado pela instituicao</span>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="row g-3 align-items-end">
+        <input type="hidden" name="form_action" value="reference">
+        <div class="col-lg-4">
+            <label class="form-label" for="label">Identificacao do modelo</label>
+            <input class="form-control" id="label" name="label" placeholder="Ex.: Certificado 2025" required>
+        </div>
+        <div class="col-lg-3">
+            <label class="form-label" for="institution_id">Instituicao</label>
+            <select class="form-select" id="institution_id" name="institution_id" required>
+                <option value="">Selecionar</option>
+                {% for institution in institutions %}
+                <option value="{{ institution.id }}">{{ institution.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-2">
+            <label class="form-label" for="document_type_id">Tipo</label>
+            <select class="form-select" id="document_type_id" name="document_type_id" required>
+                <option value="">Selecionar</option>
+                {% for document_type in document_types %}
+                <option value="{{ document_type.id }}">{{ document_type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-lg-3">
+            <label class="form-label" for="document">Documento original</label>
+            <input class="form-control" id="document" name="document" type="file" accept=".pdf,.png,.jpg,.jpeg" required>
+        </div>
+        <div class="col-12">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-file-earmark-check"></i> Processar e guardar modelo</button>
+        </div>
+    </form>
+</section>
+
+<section class="content-band">
+    <div class="section-heading">
+        <h2>Modelos registados</h2>
+        <span>{{ references|length }} modelo(s)</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Modelo</th>
+                    <th>Instituicao</th>
+                    <th>Tipo</th>
+                    <th>Campos OCR</th>
+                    <th>Estado</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reference in references %}
+                <tr>
+                    <td>{{ reference.label }}</td>
+                    <td>{{ reference.institution.name }}</td>
+                    <td>{{ reference.document_type.name }}</td>
+                    <td>{{ reference.extracted_fields|selectattr('value')|list|length }} identificados</td>
+                    <td>{% if reference.active %}<span class="badge text-bg-success">Ativo</span>{% else %}<span class="badge text-bg-secondary">Inativo</span>{% endif %}</td>
+                    <td>{{ reference.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-4">Nenhum modelo original registado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

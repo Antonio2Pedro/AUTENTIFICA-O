@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Nova verificacao · DocAuth AI{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Analise documental</p>
+        <h1>Nova verificacao</h1>
+    </div>
+</div>
+
+<section class="content-band narrow-band">
+    <form method="post" enctype="multipart/form-data" class="upload-form">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <label class="form-label" for="document_type_id">Tipo de documento</label>
+                <select class="form-select" id="document_type_id" name="document_type_id" required>
+                    <option value="">Selecionar tipo</option>
+                    {% for type in document_types %}
+                    <option value="{{ type.id }}">{{ type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-lg-7">
+                <label class="form-label" for="document">Documento</label>
+                <input class="form-control" id="document" name="document" type="file" accept=".pdf,.png,.jpg,.jpeg" required>
+                <div class="form-text">Formatos aceites: PDF, PNG, JPG e JPEG. Tamanho maximo: 10 MB.</div>
+            </div>
+            <div class="col-lg-6">
+                <label class="form-label" for="institution_id">Instituicao emissora</label>
+                <select class="form-select" id="institution_id" name="institution_id">
+                    <option value="">Nao comparar com uma instituicao</option>
+                    {% for institution in institutions %}
+                    <option value="{{ institution.id }}">{{ institution.name }} ({{ institution.code }})</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Selecione uma instituicao ou um modelo abaixo para calcular as semelhancas com o original.</div>
+            </div>
+            <div class="col-lg-6">
+                <label class="form-label" for="reference_document_id">Modelo original de referencia</label>
+                <select class="form-select" id="reference_document_id" name="reference_document_id">
+                    <option value="">Selecionar automaticamente pela instituicao</option>
+                    {% for reference in reference_documents %}
+                    <option value="{{ reference.id }}">{{ reference.institution.code }} · {{ reference.document_type.name }} · {{ reference.label }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Os modelos sao registados pelo administrador em “Modelos originais”.</div>
+            </div>
+        </div>
+
+        <div class="upload-actions">
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-cpu"></i> Analisar documento
+            </button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('documents.history') }}">
+                <i class="bi bi-clock-history"></i> Historico
+            </a>
+        </div>
+    </form>
+</section>
+{% endblock %}

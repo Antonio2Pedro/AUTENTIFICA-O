@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · DocAuth AI{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Painel operacional</p>
+        <h1>Dashboard</h1>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('documents.new') }}">
+        <i class="bi bi-cloud-upload"></i> Nova verificacao
+    </a>
+</div>
+
+<section class="metric-grid">
+    <article class="metric-card">
+        <span>Total de documentos</span>
+        <strong>{{ total_documents }}</strong>
+    </article>
+    <article class="metric-card metric-green">
+        <span>Baixo risco</span>
+        <strong>{{ low_risk }}</strong>
+    </article>
+    <article class="metric-card metric-amber">
+        <span>Risco medio</span>
+        <strong>{{ medium_risk }}</strong>
+    </article>
+    <article class="metric-card metric-red">
+        <span>Alto risco</span>
+        <strong>{{ high_risk }}</strong>
+    </article>
+    <article class="metric-card metric-gray">
+        <span>Verificacao manual</span>
+        <strong>{{ manual }}</strong>
+    </article>
+</section>
+
+<section class="content-band">
+    <div class="section-heading">
+        <h2>Verificacoes recentes</h2>
+        <span>{{ total_verifications }} verificacoes registadas</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Documento</th>
+                    <th>Tipo</th>
+                    <th>Resultado</th>
+                    <th>Score</th>
+                    <th>Data</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for verification in recent %}
+                <tr>
+                    <td>{{ verification.document.original_filename }}</td>
+                    <td>{{ verification.document.document_type.name }}</td>
+                    <td><span class="risk-badge {{ verification.result.risk_level|lower|replace(' ', '-') }}">{{ verification.result.risk_level }}</span></td>
+                    <td>{{ verification.result.risk_score }}/100</td>
+                    <td>{{ verification.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('documents.detail', verification_id=verification.id) }}" title="Ver detalhes">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Ainda nao existem verificacoes.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+

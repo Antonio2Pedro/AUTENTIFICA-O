@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Historico · DocAuth AI{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Auditoria operacional</p>
+        <h1>Historico</h1>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('documents.new') }}">
+        <i class="bi bi-cloud-upload"></i> Nova verificacao
+    </a>
+</div>
+
+<section class="content-band">
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Documento</th>
+                    <th>Tipo</th>
+                    <th>Utilizador</th>
+                    <th>Resultado</th>
+                    <th>Score</th>
+                    <th>Data</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for verification in verifications %}
+                <tr>
+                    <td>{{ verification.document.original_filename }}</td>
+                    <td>{{ verification.document.document_type.name }}</td>
+                    <td>{{ verification.user.name }}</td>
+                    <td><span class="risk-badge {{ verification.result.risk_level|lower|replace(' ', '-') }}">{{ verification.result.risk_level }}</span></td>
+                    <td>{{ verification.result.risk_score }}/100</td>
+                    <td>{{ verification.created_at.strftime("%d/%m/%Y %H:%M") }}</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('documents.detail', verification_id=verification.id) }}" title="Ver detalhes">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('documents.report', verification_id=verification.id) }}" title="Gerar relatorio">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Ainda nao existem verificacoes.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
+

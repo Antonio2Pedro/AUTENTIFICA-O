@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Resultado · DocAuth AI{% endblock %}
+
+{% block content %}
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">Resultado da analise</p>
+        <h1>{{ verification.document.original_filename }}</h1>
+    </div>
+    <div class="action-row">
+        <a class="btn btn-outline-primary" href="{{ url_for('documents.report', verification_id=verification.id) }}">
+            <i class="bi bi-file-earmark-pdf"></i> Relatorio
+        </a>
+        <a class="btn btn-primary" href="{{ url_for('documents.new') }}">
+            <i class="bi bi-cloud-upload"></i> Nova verificacao
+        </a>
+    </div>
+</div>
+
+<section class="content-band">
+    <form method="post" action="{{ url_for('documents.reanalyze', verification_id=verification.id) }}" class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <label class="form-label" for="reanalyze-reference">Modelo original para comparação</label>
+            <select class="form-select" id="reanalyze-reference" name="reference_document_id">
+                <option value="">Manter modelo atual</option>
+                {% for item in reference_documents %}
+                <option value="{{ item.id }}" {% if verification.validation_summary.reference_comparison and verification.validation_summary.reference_comparison.reference_id == item.id %}selected{% endif %}>
+                    {{ item.institution.name }} · {{ item.document_type.name }} · {{ item.label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-outline-primary" type="submit">
+                <i class="bi bi-arrow-repeat"></i> Reanalisar com regras atualizadas
+            </button>
+        </div>
+    </form>
+</section>
+
+<section class="result-layout">
+    <article class="document-preview">
+        <div class="section-heading">
+            <h2>Documento analisado</h2>
+            <span>{{ verification.document.document_type.name }}</span>
+        </div>
+        <object data="{{ url_for('documents.file', document_id=verification.document.id) }}" type="{{ verification.document.mime_type }}" class="preview-frame">
+            <a href="{{ url_for('documents.file', document_id=verification.document.id) }}">Abrir documento</a>
+        </object>
+    </article>
+
+    <article class="risk-panel">
+        <span class="risk-badge large {{ verification.result.risk_level|lower|replace(' ', '-') }}">{{ verification.result.risk_level }}</span>
+        <div class="score-ring">
+            <strong>{{ verification.result.risk_score }}</strong>
+            <span>/100</span>
+        </div>
+        <p class="text-muted">Classificacao gerada pelo {{ verification.result.ai_decision }}.</p>
+        <div class="divider"></div>
+        <h2>Motivos</h2>
+        <ul class="reason-list">
+            {% for reason in verification.result.reasons %}
+            <li>{{ reason }}</li>
+            {% endfor %}
+        </ul>
+        <h2>Recomendacoes</h2>
+        <ul class="reason-list">
+            {% for recommendation in verification.result.recommendations %}
+            <li>{{ recommendation }}</li>
+            {% endfor %}
+        </ul>
+    </article>
+</section>
+
+<section class="content-band">
+    <div class="section-heading">
+        <h2>Dados extraidos</h2>
+        <span>OCR e estruturacao</span>
+    </div>
+    <div class="field-grid">
+        <div><span>Nome</span><strong>{{ verification.extracted_fields.holder_name or "Nao identificado" }}</strong></div>
+        <div><span>Numero</span><strong>{{ verification.extracted_fields.document_number or "Nao identificado" }}</strong></div>
+        <div><span>Numero de processo</span><strong>{{ verification.extracted_fields.process_number or "Nao identificado" }}</strong></div>
+        <div><span>Numero de identificacao</span><strong>{{ verification.extracted_fields.holder_id_number or "Nao identificado" }}</strong></div>
+        <div><span>Curso</span><strong>{{ verification.extracted_fields.course or "Nao identificado" }}</strong></div>
+        <div><span>Instituicao</span><strong>{{ verification.extracted_fields.institution or "Nao identificado" }}</strong></div>
+        <div><span>Data</span><strong>{{ verification.extracted_fields.issue_date or "Nao identificado" }}</strong></div>
+    </div>
+    <details class="ocr-details">
+        <summary>Ver texto extraido pelo OCR</summary>
+        <pre>{{ verification.ocr_text or "Nenhum texto foi extraido." }}</pre>
+    </details>
+</section>
+
+{% set reference = verification.validation_summary.reference_comparison %}
+{% if reference %}
+<section class="content-band">
+    <div class="section-heading">
+        <h2>Comparacao com modelo original</h2>
+        <span>{{ reference.institution }} · {{ reference.reference_label }}</span>
+    </div>
+    <div class="comparison-grid">
+        <div><span>Semelhanca textual</span><strong>{{ reference.text_similarity if reference.text_similarity is not none else "Nao calculada" }}{% if reference.text_similarity is not none %}%{% endif %}</strong></div>
+        <div><span>Semelhanca visual</span><strong>{{ reference.visual_similarity if reference.visual_similarity is not none else "Nao calculada" }}{% if reference.visual_similarity is not none %}%{% endif %}</strong></div>
+        <div><span>Estrutura</span><strong>{% if reference.structure_match is none %}Nao calculada{% elif reference.structure_match %}Compativel{% else %}Divergente{% endif %}</strong></div>
+    </div>
+    {% if reference.differences %}
+    <ul class="reason-list mt-3 mb-0">
+        {% for difference in reference.differences %}
+        <li>{{ difference }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</section>
+{% else %}
+<section class="content-band">
+    <div class="section-heading">
+        <h2>Comparacao com modelo original</h2>
+        <span>Nao calculada</span>
+    </div>
+    <p class="text-muted mb-0">Nenhum modelo original foi associado a esta analise. Selecione um modelo ou uma instituicao ao enviar o documento para calcular as semelhancas textual e visual.</p>
+</section>
+{% endif %}
+
+<section class="content-band">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <h2>Correspondencias</h2>
+            <ul class="reason-list">
+                {% for item in verification.validation_summary.matches %}
+                <li>{{ item }}</li>
+                {% else %}
+                <li>Nenhuma correspondencia confirmada.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-lg-6">
+            <h2>Inconsistencias</h2>
+            <ul class="reason-list">
+                {% for item in verification.validation_summary.inconsistencies %}
+                <li>{{ item }}</li>
+                {% else %}
+                <li>Nenhuma inconsistencia textual encontrada.</li>
+                {% endfor %}
+                {% for field in verification.validation_summary.missing_fields %}
+                <li>Campo obrigatorio nao identificado: {{ field }}.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</section>
+{% endblock %}
